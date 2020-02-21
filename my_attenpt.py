@@ -64,6 +64,9 @@ class Ball:
         self.speed = speed
         self.color = color
         self.game = game
+        self.direction_y = "down"
+        self.direction_x = 0
+        self.previous_coords = None
 
     def draw(self):
         self.id = myCanvas.create_oval(
@@ -74,9 +77,51 @@ class Ball:
             fill=self.color
         )
 
+    def get_coords(self):
+        Coords = namedtuple("cords", "x0 y0 x1 y1")
+        _coords = self.canvas.coords(self.id)
+
+        return Coords(_coords[0], _coords[1], _coords[2], _coords[3])
+
     def move(self):
-        self.canvas.move(self.id, 0, self.speed)
-        self.game.frame.after(1000, self.move)
+        speed = self.speed
+        coords = self.get_coords()
+        if self.previous_coords:
+            # lets find the direction
+            if self.previous_coords.y0 < coords.y0:
+                #Down
+                speed = abs(speed)
+                self.direction_y = "down"
+            elif self.previous_coords.y0 > coords.y0:
+                # up
+                speed = -abs(speed)
+                self.direction_y = "up"
+
+            elif self.previous_coords.y0 == coords.y0:
+                if self.direction_y == "down":
+                    # go up
+                    speed = -abs(speed)
+                    self.direction_y = "up"
+                else:
+                    # go down
+                    speed = abs(speed)
+                    self.direction_y = "down"
+
+        print(coords)
+        print(speed)
+
+        # when to stop going down
+        if self.direction_y == "down":
+            if coords.y0 + 30 < self.game.height:
+                self.canvas.move(self.id, 0, speed)
+
+        elif self.direction_y == "up":
+            if coords.y0 > 0:
+                self.canvas.move(self.id, 0, speed)
+
+        self.previous_coords = coords
+        self.game.frame.after(200, self.move)
+
 
 # init tk
 root = tkinter.Tk()
