@@ -10,6 +10,16 @@ class Game:
         self.height = height
         self.width = width
         self.frame = frame
+        self.ball = None
+
+    def add_ball(self):
+        # draw ball
+        center_x0 = self.width // 2 - 10
+        center_x1 = self.width // 2 + 10
+
+        self.ball = Ball(myCanvas, game=game, x0=center_x0, x1=center_x1)
+        self.ball.draw()
+
 
 
 class Paddle:
@@ -53,8 +63,26 @@ class Paddle:
             self.canvas.move(self.id, 0, self.speed)
 
 
+class CPUPaddle(Paddle):
+    def move(self):
+        coords = self.get_coords()
+        ball_coords = self.game.ball.get_coords()
+
+        print(f"cpu: {coords}")
+
+        if self.game.ball.direction_y == "down":
+            # Move down
+            self.canvas.move(self.id, 0, self.speed)
+
+        elif self.game.ball.direction_y == "up":
+            # move up
+            self.canvas.move(self.id, 0, -self.speed)
+
+        # register the callback
+        self.game.frame.after(200, self.move)
+
 class Ball:
-    def __init__(self, cavas, game, x0=70, y0=70, x1=100, y1=100, speed=10, color='blue'):
+    def __init__(self, cavas, game, x0=60, y0=0, x1=80, y1=20, speed=10, color='blue'):
         self.id = None
         self.canvas = cavas
         self.x0 = x0
@@ -168,9 +196,12 @@ myCanvas = tkinter.Canvas(root, bg="white", height=300, width=300)
 paddle = Paddle(myCanvas, game=game)
 paddle.draw()
 
-# draw ball
-ball = Ball(myCanvas, game=game)
-ball.draw()
+# draw cpu paddle
+cpu_paddle = CPUPaddle(myCanvas, game=game, x0=game.width - 10, x1=game.width)
+cpu_paddle.draw()
+
+# add ball
+game.add_ball()
 
 
 # add to window and show
@@ -192,5 +223,6 @@ def key_event(key):
 root.bind('<Key>', key_event)
 
 
-root.after(1000, ball.move)
+root.after(1000, game.ball.move)
+root.after(1000, cpu_paddle.move)
 root.mainloop()
