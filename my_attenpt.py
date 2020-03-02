@@ -62,10 +62,11 @@ class Ball:
         self.x1 = x1
         self.y1 = y1
         self.speed = speed
+        self.speedx = speed
         self.color = color
         self.game = game
         self.direction_y = "down"
-        self.direction_x = 0
+        self.direction_x = "right"
         self.previous_coords = None
 
     def draw(self):
@@ -85,9 +86,10 @@ class Ball:
 
     def move(self):
         speed = self.speed
+        speedx = self.speedx
         coords = self.get_coords()
         if self.previous_coords:
-            # lets find the direction
+            # lets find the direction for UP and Down
             if self.previous_coords.y0 < coords.y0:
                 #Down
                 speed = abs(speed)
@@ -107,8 +109,29 @@ class Ball:
                     speed = abs(speed)
                     self.direction_y = "down"
 
+            # Lets find the direction for left and right
+            if self.previous_coords.x0 < coords.x0:
+                # go right
+                speedx = abs(speedx)
+                self.direction_x = "right"
+
+            elif self.previous_coords.x0 > coords.x0:
+                # Go left
+                speedx = -abs(speedx)
+                self.direction_x = "left"
+
+            elif self.previous_coords.x0 == coords.x0:
+                if self.direction_x == "right":
+                    # go up
+                    speedx = -abs(speedx)
+                    self.direction_x = "left"
+                else:
+                    # go down
+                    speedx = abs(speed)
+                    self.direction_x = "right"
+
         print(coords)
-        print(speed)
+        print((speedx, speed))
 
         # when to stop going down
         if self.direction_y == "down":
@@ -118,6 +141,16 @@ class Ball:
         elif self.direction_y == "up":
             if coords.y0 > 0:
                 self.canvas.move(self.id, 0, speed)
+
+        # when to stop going right
+        if self.direction_x == "right":
+            if coords.x0 + 30 < self.game.width:
+                self.canvas.move(self.id, speedx, 0)
+                pass
+
+        elif self.direction_x == "left":
+            if coords.x0 > 0:
+                self.canvas.move(self.id, speedx, 0)
 
         self.previous_coords = coords
         self.game.frame.after(200, self.move)
